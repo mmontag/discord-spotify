@@ -1,0 +1,15 @@
+// Copy to config.json and fill in your own values.
+{
+  "token": "your-discord-token",
+  "clientId": "discord-client-id",
+  "guildId": "discord-guild-id",
+  "spotify": {
+    "clientId": "spotify-client-id",
+    "clientSecret": "spotify-client-secret",
+    "redirectUri": "http://localhost:3000/callback",
+    "refreshToken": "spotify-refresh-token",
+    "scopes": [
+      "spotify-api-scopes"
+    ]
+  }
+}
