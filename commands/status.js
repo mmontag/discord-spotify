@@ -6,7 +6,9 @@ module.exports = {
     .setDescription('Provides information about currently playing music.'),
   async execute(interaction) {
     // interaction.guild is the object representing the Guild in which the command was run
-    const replyText = await interaction.client.spotifyApi.getMyCurrentPlaybackState()
+    const spotifyApi = interaction.client.spotifyApi;
+    await spotifyApi.ensureAccessToken();
+    const replyText = await spotifyApi.getMyCurrentPlaybackState()
       .then(function (data) {
         // Output items
         if (data.body && data.body.is_playing) {

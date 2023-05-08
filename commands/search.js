@@ -8,8 +8,10 @@ module.exports = {
     .setDescription('Search Spotify for music to play.')
     .addStringOption(option => option.setName('query').setDescription('The search query.').setRequired(true)),
   async execute(interaction) {
+    const spotifyApi = interaction.client.spotifyApi;
     const query = interaction.options.getString('query');
-    const reply = await interaction.client.spotifyApi.searchTracks(query, { limit: 5 })
+    await spotifyApi.ensureAccessToken();
+    const reply = await spotifyApi.searchTracks(query, { limit: 5 })
       .then(function (data) {
         const items = data.body?.tracks?.items;
         if (items?.length > 0) {
@@ -50,7 +52,8 @@ module.exports = {
       const trackLabel = trackMap[trackUri] || trackUri;
       console.log(selectedTrack);
       selectedTrack.update({ content: `Playing...`, components: [] });
-      await interaction.client.spotifyApi.play({ uris: [trackUri] })
+      await spotifyApi.ensureAccessToken();
+      await spotifyApi.play({ uris: [trackUri] })
         .then(data => {
           interaction.editReply({
             content: `Now playing: ${trackLabel}`,
