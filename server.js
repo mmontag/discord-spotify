@@ -5,6 +5,7 @@ const pingCommand = require('./commands/ping');
 const serverCommand = require('./commands/server');
 const userCommand = require('./commands/user');
 const statusCommand = require('./commands/status');
+const searchCommand = require('./commands/search');
 
 const client = new Client({
   intents: [
@@ -20,13 +21,15 @@ client.commands.set(pingCommand.data.name, pingCommand);
 client.commands.set(serverCommand.data.name, serverCommand);
 client.commands.set(userCommand.data.name, userCommand);
 client.commands.set(statusCommand.data.name, statusCommand);
+client.commands.set(searchCommand.data.name, searchCommand);
 
 client.once(Events.ClientReady, (c) => {
   console.log(`Logged in as ${c.user.tag}!`);
 });
 
 client.on(Events.InteractionCreate, async interaction => {
-  console.log(interaction);
+  // Uncomment this to debug if something goes wrong.
+  // console.log(interaction);
 
   if (!interaction.isChatInputCommand()) return;
 
