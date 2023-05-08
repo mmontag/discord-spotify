@@ -1,5 +1,5 @@
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
-const { clientId, guildId, token } = require('./config.json');
+const { token } = require('./config.json');
 const { spotifyApi } = require('./spotify.js');
 const pingCommand = require('./commands/ping');
 const serverCommand = require('./commands/server');
@@ -14,9 +14,6 @@ const client = new Client({
 });
 
 client.spotifyApi = spotifyApi;
-
-const prefix = '!'; // Change this to your desired command prefix
-// 277061110016
 
 client.commands = new Collection();
 client.commands.set(pingCommand.data.name, pingCommand);
