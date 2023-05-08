@@ -7,7 +7,8 @@
     "clientId": "spotify-client-id",
     "clientSecret": "spotify-client-secret",
     "redirectUri": "http://localhost:3000/callback",
-    "refreshToken": "spotify-refresh-token",
+    // First get a refresh token, then add this line:
+    // "refreshToken": "spotify-refresh-token",
     "scopes": [
       "spotify-api-scopes"
     ]
