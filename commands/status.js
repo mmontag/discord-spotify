@@ -6,22 +6,22 @@ module.exports = {
     .setDescription('Provides information about currently playing music.'),
   async execute(interaction) {
     // interaction.guild is the object representing the Guild in which the command was run
-    const status = await interaction.client.spotifyApi.getMyCurrentPlaybackState()
+    const replyText = await interaction.client.spotifyApi.getMyCurrentPlaybackState()
       .then(function (data) {
         // Output items
         if (data.body && data.body.is_playing) {
-          const nowPlayingText = `Now playing: ${data.body.item.artists[0]?.name} - ${data.body.item?.name}`;
-          console.log(nowPlayingText);
-          return nowPlayingText;
+          const item = data.body.item;
+          return `Now playing: ${item.artists[0]?.name} - ${item?.name}`;
         } else {
-          console.log("User is not playing anything, or doing so in private.");
-          return 'Not playing anything';
+          return 'Not playing anything.';
         }
       }, function (err) {
         console.log('Something went wrong!', err);
-        return 'Error getting current playback state';
+        return 'Error getting playback state.';
       });
 
-    await interaction.reply(status);
+    console.log(replyText);
+
+    await interaction.reply(replyText);
   },
 };
