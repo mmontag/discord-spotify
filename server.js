@@ -1,9 +1,6 @@
 const { Client, Collection, Events, GatewayIntentBits } = require('discord.js');
 const { token } = require('./config.json');
 const { spotifyApi } = require('./spotify.js');
-const pingCommand = require('./commands/ping');
-const serverCommand = require('./commands/server');
-const userCommand = require('./commands/user');
 const statusCommand = require('./commands/status');
 const searchCommand = require('./commands/search');
 const skipCommand = require('./commands/skip');
@@ -18,9 +15,6 @@ const client = new Client({
 client.spotifyApi = spotifyApi;
 
 client.commands = new Collection();
-client.commands.set(pingCommand.data.name, pingCommand);
-client.commands.set(serverCommand.data.name, serverCommand);
-client.commands.set(userCommand.data.name, userCommand);
 client.commands.set(statusCommand.data.name, statusCommand);
 client.commands.set(searchCommand.data.name, searchCommand);
 client.commands.set(skipCommand.data.name, skipCommand);
