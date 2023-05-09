@@ -1,14 +1,14 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const open = require('open');
 
-trackMap = {};
-
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('search')
     .setDescription('Search Spotify for music to play.')
     .addStringOption(option => option.setName('query').setDescription('The search query.').setRequired(true)),
   async execute(interaction) {
+    const trackMap = {};
+
     const spotifyApi = interaction.client.spotifyApi;
     const query = interaction.options.getString('query');
     await spotifyApi.ensureAccessToken();
@@ -18,12 +18,12 @@ module.exports = {
         if (items?.length > 0) {
           const tracks = items.map(track => {
             return {
+              ...track,
               label: `${track.artists[0]?.name} - ${track.name}`,
-              uri: track.uri,
             };
           });
           const rows = tracks.map(track => {
-            trackMap[track.uri] = track.label;
+            trackMap[track.uri] = track;
             const button = new ButtonBuilder({
               label: track.label,
               customId: track.uri,
@@ -50,7 +50,7 @@ module.exports = {
     try {
       const selectedTrack = await response.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
       const trackUri = selectedTrack.customId;
-      const trackLabel = trackMap[trackUri] || trackUri;
+      const trackLabel = trackMap[trackUri].label || trackUri;
       selectedTrack.update({ content: `Playing...`, components: [] });
       await spotifyApi.ensureAccessToken();
       // TODO: extract this play fallback behavior to Spotify API wrapper
@@ -80,7 +80,22 @@ module.exports = {
           content: `Now playing: ${trackLabel}`,
           components: [],
         });
-        interaction.channel.send(getTrackAnnouncement(interaction.user.username, trackLabel));
+        const track = trackMap[trackUri];
+        const images = track?.album.images;
+        const thumbnailUrl = images[images.length - 1].url;
+        interaction.channel.send({
+          content: getTrackAnnouncement(interaction.user.username, trackLabel),
+          embeds: [{
+            title: track.name,
+            url: track.external_urls.spotify,
+            author: {
+              name: track.artists[0].name,
+            },
+            thumbnail: {
+              url: thumbnailUrl,
+            },
+          }],
+        });
       } else {
         interaction.editReply({
           content: `Error playing ${trackLabel}. Has Spotify been paused a while?`,
