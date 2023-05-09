@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const open = require('open');
 
 trackMap = {};
 
@@ -50,23 +51,62 @@ module.exports = {
       const selectedTrack = await response.awaitMessageComponent({ filter: collectorFilter, time: 60_000 });
       const trackUri = selectedTrack.customId;
       const trackLabel = trackMap[trackUri] || trackUri;
-      console.log(selectedTrack);
       selectedTrack.update({ content: `Playing...`, components: [] });
       await spotifyApi.ensureAccessToken();
-      await spotifyApi.play({ uris: [trackUri] })
+      // TODO: extract this play fallback behavior to Spotify API wrapper
+      const success = await spotifyApi.play({ uris: [trackUri] })
         .then(data => {
-          interaction.editReply({
-            content: `Now playing: ${trackLabel}`,
-            components: [],
-          });
-          // TODO: Send a funny message to channel announcing this user's embarrassing selection.
-          // (The other messages are ephemeral, only seen by user who sent the commands.)
-        }, err => {
+          return true;
+        }, async err => {
           console.log(`Error playing ${trackLabel}`, err.message);
-          interaction.editReply({ content: `Error playing ${trackLabel}. Has Spotify been paused a while?`, components: [] });
+          // Fallback: attempt to wake Spotify by opening the track through the operating system.
+          return open(trackUri).then(cp => {
+            return new Promise((resolve, reject) => {
+              cp.on('exit', code => {
+                if (code === 0) {
+                  console.log(`Forced Spotify to open ${trackUri} through local operating system.`);
+                  resolve(true);
+                } else if (code === 1) {
+                  console.log(`Error opening ${trackUri} through local operating system.`);
+                  resolve(false);
+                }
+              });
+            });
+          });
         });
+
+      if (success) {
+        interaction.editReply({
+          content: `Now playing: ${trackLabel}`,
+          components: [],
+        });
+        interaction.channel.send(getTrackAnnouncement(interaction.user.username, trackLabel));
+      } else {
+        interaction.editReply({
+          content: `Error playing ${trackLabel}. Has Spotify been paused a while?`,
+          components: []
+        });
+      }
     } catch (e) {
       await interaction.deleteReply();
     }
   },
 };
+
+function getTrackAnnouncement(username, trackLabel) {
+  const trackAnnounceMessages = [
+    `You can thank ${username} for this one... **${trackLabel}**`,
+    `Apparently ${username} thought **${trackLabel}** would be an appropriate choice.`,
+    `I'm not sure what ${username} was thinking, but here's **${trackLabel}**.`,
+    `${username} decided to play **${trackLabel}**.`,
+    `It's **${trackLabel}** time! Thanks, ${username}.`,
+    `Blame ${username}. It's **${trackLabel}**.`,
+    `Great, ${username} chose **${trackLabel}**.`,
+    `Yay, **${trackLabel}**! Thanks, ${username}.`,
+    `${username} rolls the dice with **${trackLabel}**.`,
+    `**${trackLabel}**, courtesy of ${username}. That figures`,
+    `Interesting, ${username}. **${trackLabel}**`,
+  ];
+  const idx = Math.floor(Math.random() * trackAnnounceMessages.length);
+  return trackAnnounceMessages[idx];
+}
