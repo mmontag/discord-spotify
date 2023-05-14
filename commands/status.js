@@ -8,17 +8,21 @@ module.exports = {
     // interaction.guild is the object representing the Guild in which the command was run
     const spotifyApi = interaction.client.spotifyApi;
     await spotifyApi.ensureAccessToken();
-    const reply = await spotifyApi.getMyCurrentPlaybackState()
+    const reply = await spotifyApi.getMyQueue()
       .then(function (data) {
         // Output items
-        if (data.body && data.body.is_playing) {
-          const item = data.body.item;
-          const images = item.album.images;
-          const thumbnailUrl = images[images.length - 1].url;
+        if (data.body) {
+          const item = data.body.currently_playing;
+          const queue = data.body.queue;
+          let embed = {
+            color: 0x1ed760,
+          };
 
-          return {
-            content: 'Now Playing',
-            embeds: [{
+          if (item) {
+            const images = item.album.images;
+            const thumbnailUrl = images[images.length - 1].url;
+            embed = {
+              ...embed,
               title: item.name,
               url: item.external_urls.spotify,
               author: {
@@ -28,7 +32,27 @@ module.exports = {
               thumbnail: {
                 url: thumbnailUrl,
               },
-            }],
+            }
+          } else {
+            embed = {
+              ...embed,
+              title: '(Paused)'
+            }
+          }
+
+          if (queue && queue.length > 0) {
+            embed = {
+              ...embed,
+              fields: [{
+                name: 'Up next:',
+                value: queue.slice(0, 15).map(track => `${track.artists[0]?.name} - ${track.name}`).join('\n'),
+              }],
+            }
+          }
+
+          return {
+            content: 'Now Playing',
+            embeds: [embed],
           };
 
         } else {
