@@ -91,11 +91,13 @@ module.exports = {
             author: {
               name: track.artists[0].name,
             },
+            description: track.album.name,
             thumbnail: {
               url: thumbnailUrl,
             },
           }],
         });
+        console.log(`Now Playing: ${trackLabel}`);
       } else {
         interaction.editReply({
           content: `Error playing ${trackLabel}. Has Spotify been paused a while?`,

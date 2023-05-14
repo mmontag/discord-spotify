@@ -17,14 +17,30 @@ module.exports = {
       });
 
     // Delay one second to wait for Spotify skip.
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-    const replyText = await spotifyApi.getMyCurrentPlaybackState()
+    const reply = await spotifyApi.getMyCurrentPlaybackState()
       .then(function (data) {
         // Output items
         if (data.body && data.body.is_playing) {
           const item = data.body.item;
-          return `Now playing: ${item.artists[0]?.name} - ${item?.name}`;
+          const images = item.album.images;
+          const thumbnailUrl = images[images.length - 1].url;
+
+          return {
+            content: 'Now Playing',
+            embeds: [{
+              title: item.name,
+              url: item.external_urls.spotify,
+              author: {
+                name: item.artists[0].name,
+              },
+              description: item.album.name,
+              thumbnail: {
+                url: thumbnailUrl,
+              },
+            }],
+          };
         } else {
           return 'Not playing anything.';
         }
@@ -33,8 +49,8 @@ module.exports = {
         return 'Error getting playback state.';
       });
 
-    console.log(replyText);
+    console.log(reply);
 
-    await interaction.reply(replyText);
+    await interaction.reply(reply);
   },
 };
