@@ -45,7 +45,7 @@ module.exports = {
               ...embed,
               fields: [{
                 name: 'Up next:',
-                value: queue.slice(0, 15).map(track => `${track.artists[0]?.name} - ${track.name}`).join('\n'),
+                value: queue.slice(0, 5).map(track => `${track.artists[0]?.name} - ${track.name}`).join('\n'),
               }],
             }
           }
